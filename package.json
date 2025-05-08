@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "start:bebop": "node index.js --service bebop",
+    "start:relay": "node index.js --service relay",
+    "start:combined": "node index.js --service combined",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

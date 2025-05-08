@@ -20,27 +20,37 @@ const TOKEN_ADDRESSES = {
 };
 
 /**
- * Swap configurations
- * Each config defines a token pair to swap
+ * Combined service swap configurations (Bebop + Relay)
  */
-const SWAP_CONFIGS = [
+const COMBINED_SWAP_CONFIGS = [
   {
-    name: "USDC → WETH → USDC",
-    active: true, // Set to false to disable this swap
-    fromToken: TOKEN_ADDRESSES.USDC, 
+    name: "USDC → WETH → USDC (Bebop+Relay)",
+    active: true,
+    fromToken: TOKEN_ADDRESSES.USDC,
     toToken: TOKEN_ADDRESSES.WETH,
-    amount: 1 * 1e6, // 1 USDC with 6 decimals
-    description: "Swap USDC to WETH and back"
+    // Use min and max for random amount selection
+    minAmount: 10 * 1e6, // 0.5 USDC with 6 decimals
+    maxAmount: 20 * 1e6,   // 2 USDC with 6 decimals
+    amount: 1 * 1e6,      // Default amount (used if random not enabled)
+    description: "Swap USDC to WETH using Bebop, then back to USDC using Relay",
+    service: "combined" // Use combined service for this swap
   },
   // {
-  //   name: "WETH → USDC → WETH",
-  //   active: true,
-  //   fromToken: TOKEN_ADDRESSES.WETH, 
-  //   toToken: TOKEN_ADDRESSES.USDC,
-  //   amount: 0.01 * 1e18, // 0.01 WETH with 18 decimals
-  //   description: "Swap WETH to USDC and back"
+  //   name: "USDT → WETH → USDT (Bebop+Relay)",
+  //   active: false, // Disabled by default
+  //   fromToken: TOKEN_ADDRESSES.USDT,
+  //   toToken: TOKEN_ADDRESSES.WETH,
+  //   // Use min and max for random amount selection
+  //   minAmount: 0.5 * 1e6, // 0.5 USDT with 6 decimals
+  //   maxAmount: 2 * 1e6,   // 2 USDT with 6 decimals
+  //   amount: 1 * 1e6,      // Default amount (used if random not enabled)
+  //   description: "Swap USDT to WETH using Bebop, then back to USDT using Relay",
+  //   service: "combined"
   // }
 ];
+
+// Use combined configs as all configs
+const ALL_SWAP_CONFIGS = COMBINED_SWAP_CONFIGS;
 
 /**
  * General configuration
@@ -49,24 +59,40 @@ const CONFIG = {
   // Set to true to randomly select from active swap configurations
   useRandomSwap: true,
   
+  // Set to true to use random amount between minAmount and maxAmount
+  useRandomAmount: true,
+  
   // Number of seconds to wait between swaps if running multiple
   delayBetweenSwaps: 5,
   
+  // Minimum and maximum delay (in seconds) between repeat transactions
+  minDelaySeconds: 60, // 1 minute
+  maxDelaySeconds: 300, // 5 minutes
+  
   // Max gas price in gwei to use for transactions
-  maxGasPrice: 1.5
+  maxGasPrice: 1.5,
+  
+  // Maximum acceptable total cost percentage (shortfall + fee, abort if exceeded)
+  maxAcceptableShortfallPercentage: 2,
+  
+  // Percentage buffer to add to shortfall amount (helps prevent transaction failures)
+  shortfallBufferPercentage: 20
 };
 
 /**
  * Router addresses
  */
 const BEBOP_ROUTER = "0xbbbbbBB520d69a9775E85b458C58c648259FAD5F";
+const RELAY_ROUTER = "0xaaaaaaae92cc1ceef79a038017889fdd26d23d4d";
 
 module.exports = {
   PRIVATE_KEY,
   RPC_URL,
   FLASHLOAN_CONTRACT,
   TOKEN_ADDRESSES,
-  SWAP_CONFIGS,
+  COMBINED_SWAP_CONFIGS,
+  ALL_SWAP_CONFIGS,
   CONFIG,
-  BEBOP_ROUTER
+  BEBOP_ROUTER,
+  RELAY_ROUTER
 }; 

@@ -4,6 +4,23 @@ const tokenABI = require('../../abis/erc20.json');
 const flashloanABI = require('../../abis/flashloan.json');
 
 /**
+ * Initialize provider
+ * @returns {Object} Ethers provider
+ */
+const initializeProvider = () => {
+  return new ethers.JsonRpcProvider(RPC_URL);
+};
+
+/**
+ * Initialize wallet with provider
+ * @param {Object} provider Ethers provider
+ * @returns {Object} Ethers wallet
+ */
+const initializeWallet = (provider) => {
+  return new ethers.Wallet(PRIVATE_KEY, provider);
+};
+
+/**
  * Initialize provider and wallet
  * @returns {Object} Object containing provider, wallet, and signer
  */
@@ -199,11 +216,13 @@ const calculateRequiredTokens = (shortfallAmount, feePercentage, decimals = 6) =
 
 module.exports = {
   initializeProviderAndWallet,
+  initializeProvider,
+  initializeWallet,
+  getTokenDecimals,
+  formatTokenAmount,
   checkApproval,
   approveToken,
   checkTokenBalance,
   getFlashloanFeePercentage,
-  calculateRequiredTokens,
-  getTokenDecimals,
-  formatTokenAmount
+  calculateRequiredTokens
 }; 

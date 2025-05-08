@@ -138,46 +138,41 @@ const executeFlashloan = async (
     console.log(`🚀 Executing flashloan for ${formattedAmount} tokens (${amountBorrow} raw)...`);
     
     // First estimate gas to ensure the transaction will succeed
-    const estimatedGas = await flashloanContract.utang.estimateGas(
-      [tokenAddress],
-      [amountBorrow],
-      flashloanPayload
-    );
-    
-    console.log(`⛽ Estimated gas: ${estimatedGas} units`);
-    return;
-    
-    // Add a buffer to the estimated gas
-    const gasLimit = Math.floor(Number(estimatedGas) * 1.2);
-    
-    // Set up transaction options
-    const txOptions = {
-      gasLimit
-    };
-    
-    // Add gas price if specified in config
-    if (config.maxGasPrice) {
-      txOptions.gasPrice = ethers.parseUnits(config.maxGasPrice.toString(), "gwei");
-      console.log(`💰 Setting max gas price: ${config.maxGasPrice} gwei`);
+    let estimatedGas;
+    try {
+      estimatedGas = await flashloanContract.utang.estimateGas(
+        [tokenAddress],
+        [amountBorrow],
+        flashloanPayload
+      );
+      console.log(`⛽ Estimated gas: ${estimatedGas} units`);
+    } catch (gasError) {
+      console.error('❌ Gas estimation failed:', gasError.message);
+      console.error('⛔ Transaction will not be sent.');
+      return null;
     }
     
     // Now execute the actual transaction
     const tx = await flashloanContract.utang(
       [tokenAddress],
       [amountBorrow],
-      flashloanPayload,
-      txOptions
+      flashloanPayload
     );
     
     console.log(`📝 Flashloan transaction submitted: ${tx.hash}`);
     console.log('⏳ Waiting for transaction confirmation...');
     
-    const receipt = await tx.wait();
-    console.log(`✅ Flashloan transaction successful: ${receipt.hash}`);
-    return receipt;
+    try {
+      const receipt = await tx.wait();
+      console.log(`✅ Flashloan transaction successful: ${receipt.hash}`);
+      return receipt;
+    } catch (txError) {
+      console.error('❌ Error executing flashloan:', txError.message);
+      return null;
+    }
   } catch (error) {
     console.error('❌ Error executing flashloan:', error.message);
-    throw error;
+    return null;
   }
 };
 
