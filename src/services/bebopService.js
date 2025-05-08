@@ -16,8 +16,8 @@ const requestInquiry = async (buyToken, sellToken, sellAmount, takerAddress, ori
     
     console.log(`🔍 Requesting inquiry from ${sellToken} to ${buyToken}...`);
     const response = await axios.get(url);
-    
-    if (!response.data || response.data.status !== 'SIG_SUCCESS') {
+
+    if (!response.data) {
       throw new Error(`API returned unsuccessful status: ${response.data?.status || 'No status'}`);
     }
     

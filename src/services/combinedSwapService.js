@@ -182,7 +182,8 @@ const executeCombinedSwapCycle = async (wallet, provider, swapConfig, flashloanC
       wallet.address,
       swapConfig,
       BEBOP_ROUTER,
-      RELAY_ROUTER
+      RELAY_ROUTER,
+      inquiry1.approvalTarget // Pass approvalTarget
     );
     
     // Encode the data for flashloan
@@ -193,7 +194,7 @@ const executeCombinedSwapCycle = async (wallet, provider, swapConfig, flashloanC
     
     // Execute the flashloan - this will execute both swaps in a single transaction
     console.log('💫 Executing flashloan with both Bebop and Relay swaps in a single transaction...');
-    await flashloanService.executeFlashloan(
+    const txReceipt = await flashloanService.executeFlashloan(
       wallet,
       flashloanContract,
       fromToken, // Token to borrow
@@ -201,6 +202,12 @@ const executeCombinedSwapCycle = async (wallet, provider, swapConfig, flashloanC
       flashloanPayload,
       { maxGasPrice: 1.5 } // Use a reasonable gas price
     );
+
+    if (!txReceipt || txReceipt.status !== 1) {
+      console.error('❌ Flashloan transaction failed or was reverted.');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      return { success: false, error: 'Flashloan transaction failed or reverted.' };
+    }
     
     console.log('✅ Combined swap cycle completed successfully!');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -234,6 +241,7 @@ const executeCombinedSwapCycle = async (wallet, provider, swapConfig, flashloanC
  * @param {Object} swapConfig Swap configuration
  * @param {string} bebopRouter Bebop router address
  * @param {string} relayRouter Relay router address
+ * @param {string} approvalTarget Approval target address
  * @returns {string} Flashloan payload as JSON string
  */
 const generateCombinedPayload = (
@@ -245,7 +253,8 @@ const generateCombinedPayload = (
   walletAddress,
   swapConfig,
   bebopRouter = BEBOP_ROUTER,
-  relayRouter = RELAY_ROUTER
+  relayRouter = RELAY_ROUTER,
+  approvalTarget
 ) => {
   console.log(`🔧 Generating combined payload with Bebop and Relay data...`);
   console.log(`🧩 First swap: Bebop (${bebopSwapData.substring(0, 20)}...)`);
@@ -277,34 +286,32 @@ const generateCombinedPayload = (
     payloads.push([flashloanContract, fromToken, 0, transferFromPayload]);
   }
   
-  // Always approve router for both tokens
+  // Approve Bebop approvalTarget for both tokens (if provided), else fallback to bebopRouter
+  const approveBebopSpender = approvalTarget || bebopRouter;
   const approveFromTokenPayload = tokenIface.encodeFunctionData(
     "approve", 
-    [bebopRouter, ethers.MaxUint256]
+    [approveBebopSpender, ethers.MaxUint256]
   );
-  
   const approveToTokenPayload = tokenIface.encodeFunctionData(
     "approve", 
-    [bebopRouter, ethers.MaxUint256]
+    [approveBebopSpender, ethers.MaxUint256]
   );
-  
-  // Add approvals first
+  // Add approvals for Bebop
   payloads.push(
     [flashloanContract, fromToken, 0, approveFromTokenPayload],
     [flashloanContract, toToken, 0, approveToTokenPayload]
   );
-  
-  // Also approve the relay router
+
+  // Approve the relay router for both tokens
   const approveRelayRouterPayload = tokenIface.encodeFunctionData(
     "approve", 
     [relayRouter, ethers.MaxUint256]
   );
-  
   payloads.push(
     [flashloanContract, fromToken, 0, approveRelayRouterPayload],
     [flashloanContract, toToken, 0, approveRelayRouterPayload]
   );
-  
+
   // Add swap operations
   // Bebop swap (first swap)
   payloads.push([flashloanContract, bebopRouter, 0, bebopSwapData]);

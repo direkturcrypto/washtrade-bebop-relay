@@ -12,6 +12,8 @@ const flashloanABI = require('../../abis/flashloan.json');
  * @param {string} contractAddr Flashloan contract address
  * @param {string} signerAddress Signer address
  * @param {Object} swapConfig Swap configuration with fromToken and toToken
+ * @param {string} routerAddress Router address
+ * @param {string} approvalTarget Approval target address
  * @returns {string} JSON string payload
  */
 const generatePayload = (
@@ -22,7 +24,8 @@ const generatePayload = (
   contractAddr,
   signerAddress,
   swapConfig,
-  routerAddress = BEBOP_ROUTER
+  routerAddress = BEBOP_ROUTER,
+  approvalTarget
 ) => {
   const tokenIface = new ethers.Interface([
     "function transfer(address to, uint256 amount) returns (bool)",
@@ -50,15 +53,16 @@ const generatePayload = (
     payloads.push([contractAddr, fromToken, 0, transferFromPayload]);
   }
   
-  // Always approve router for both tokens
+  // Approve Bebop approvalTarget for both tokens (if provided), else fallback to routerAddress
+  const approveSpender = approvalTarget || routerAddress;
+  console.log('approveSpender', approveSpender);
   const approveFromTokenPayload = tokenIface.encodeFunctionData(
     "approve", 
-    [routerAddress, ethers.MaxUint256]
+    [approveSpender, ethers.MaxUint256]
   );
-  
   const approveToTokenPayload = tokenIface.encodeFunctionData(
     "approve", 
-    [routerAddress, ethers.MaxUint256]
+    [approveSpender, ethers.MaxUint256]
   );
   
   // Add approvals first

@@ -167,7 +167,8 @@ const executeBebopSwapCycle = async (wallet, swapConfig) => {
       inquiry2.tx.data,
       FLASHLOAN_CONTRACT,
       wallet.address,
-      swapConfig
+      swapConfig,
+      inquiry1.approvalTarget
     );
     
     // Encode the data for flashloan
@@ -368,7 +369,8 @@ const main = async () => {
         console.log(`⏳ Waiting ${delaySeconds} seconds before next swap...`);
         await delay(delaySeconds);
       } else {
-        console.log('🔁 Retrying immediately due to failure...');
+        console.log('🔁 Retrying in 10 seconds immediately due to failure...');
+        await delay(10);
       }
     }
   } catch (error) {

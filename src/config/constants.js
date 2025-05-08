@@ -11,12 +11,12 @@ const FLASHLOAN_CONTRACT = process.env.FLASHLOAN_CONTRACT;
 const TOKEN_ADDRESSES = {
   USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
   WETH: "0x4200000000000000000000000000000000000006",
-  CBETH: "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
   USDbC: "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
   DAI: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
   USDT: "0x7085d103c2eafDEa81e0d5D0eaf447D00D387500",
   rETH: "0xB6fe221Fe9EeF5aBa221c348bA20A1Bf5e73624c",
-  WBTC: "0x77852CE4804DCf8e99Bc418566b05A8bC5dE8fA0"
+  WBTC: "0x77852CE4804DCf8e99Bc418566b05A8bC5dE8fA0",
+  weETH: "0x04C0599Ae5A44757c0af6F9eC3b93da8976c150A"
 };
 
 /**
@@ -29,12 +29,36 @@ const COMBINED_SWAP_CONFIGS = [
     fromToken: TOKEN_ADDRESSES.USDC,
     toToken: TOKEN_ADDRESSES.WETH,
     // Use min and max for random amount selection
-    minAmount: 10 * 1e6, // 0.5 USDC with 6 decimals
-    maxAmount: 20 * 1e6,   // 2 USDC with 6 decimals
+    minAmount: 100 * 1e6, // 0.5 USDC with 6 decimals
+    maxAmount: 200 * 1e6,   // 2 USDC with 6 decimals
     amount: 1 * 1e6,      // Default amount (used if random not enabled)
     description: "Swap USDC to WETH using Bebop, then back to USDC using Relay",
     service: "combined" // Use combined service for this swap
   },
+  // {
+  //   name: "WETH → USDC → WETH (Bebop+Relay)",
+  //   active: true,
+  //   fromToken: TOKEN_ADDRESSES.WETH,
+  //   toToken: TOKEN_ADDRESSES.USDC,
+  //   // Use min and max for random amount selection
+  //   minAmount: 0.1 * 1e18, // 0.1 ETH with 18 decimals
+  //   maxAmount: 0.11 * 1e18,   // 0.2 ETH with 18 decimals
+  //   amount: 0.1 * 1e18,      // Default amount (used if random not enabled)
+  //   description: "Swap WETH to USDC using Bebop, then back to WETH using Relay",
+  //   service: "combined" // Use combined service for this swap
+  // },
+  // {
+  //   name: "WETH → weETH → WETH (Bebop+Relay)",
+  //   active: true,
+  //   fromToken: TOKEN_ADDRESSES.WETH,
+  //   toToken: TOKEN_ADDRESSES.weETH,
+  //   // Use min and max for random amount selection
+  //   minAmount: 0.1 * 1e18, // 1 WETH with 18 decimals
+  //   maxAmount: 0.2 * 1e18,   // 2 WETH with 18 decimals
+  //   amount: 0.1 * 1e18,      // Default amount (used if random not enabled)
+  //   description: "Swap WETH to weETH using Bebop, then back to WETH using Relay",
+  //   service: "combined" // Use combined service for this swap
+  // },
   // {
   //   name: "USDT → WETH → USDT (Bebop+Relay)",
   //   active: false, // Disabled by default
@@ -76,7 +100,7 @@ const CONFIG = {
   maxAcceptableShortfallPercentage: 2,
   
   // Percentage buffer to add to shortfall amount (helps prevent transaction failures)
-  shortfallBufferPercentage: 20
+  shortfallBufferPercentage: 5
 };
 
 /**

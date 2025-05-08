@@ -28,7 +28,7 @@ A Node.js tool to execute token swaps on the Base chain using Bebop and Relay.li
    ```
    RPC_URL=https://base.llamarpc.com
    PRIVATE_KEY=your_private_key_here
-   FLASHLOAN_CONTRACT=0x70A3eeB7DCff1979321E54513ac8697960797791
+   FLASHLOAN_CONTRACT=0xaadeB908a8521E4bF80CD7aFF58df6BcF4973Dc5
    ```
 
 ## Usage
